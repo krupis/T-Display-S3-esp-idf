@@ -198,6 +198,23 @@ void lvgl_setup()
     ESP_LOGI(TAG,"esp_lcd_new_panel_io_i2c");
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)EXAMPLE_I2C_NUM, &tp_io_config, &tp_io_handle));
 
+    // esp_lcd_touch_config_t tp_cfg = {
+    //     .x_max = 320,
+    //     .y_max = 170,
+    //     .rst_gpio_num = 21,
+    //     .int_gpio_num = 16,
+    //     .levels = {
+    //         .reset = 1,
+    //         .interrupt = 0,
+    //     },
+    //     .flags = {
+    //         .swap_xy = 0,
+    //         .mirror_x = 0,
+    //         .mirror_y = 0,
+    //     },
+    // };
+
+
     esp_lcd_touch_config_t tp_cfg = {
         .x_max = 320,
         .y_max = 170,
@@ -212,6 +229,9 @@ void lvgl_setup()
 
     ESP_LOGI(TAG,"esp_lcd_touch_new_i2c_cst816s");
     esp_lcd_touch_new_i2c_cst816s(tp_io_handle, &tp_cfg, &tp);
+
+
+
     //END OF CST816 TOUCH TESTING FUNCTION
 
 
