@@ -14,6 +14,7 @@
 //CST816 defines
 #define EXAMPLE_I2C_SCL                17
 #define EXAMPLE_I2C_SDA                18
+#define PIN_TOUCH_RES                  21
 #define EXAMPLE_I2C_NUM                 0   // I2C number
 
 
