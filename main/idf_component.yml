@@ -1,4 +1,5 @@
 dependencies:
+  espressif/esp_lcd_touch_cst816s: "^1.0.2~1"
   idf: ">=4.4"
   lvgl/lvgl: "~8.3.6"
   esp_lcd_touch_gt911: "^1.0"

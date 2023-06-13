@@ -57,6 +57,11 @@ void app_main(void)
     lvgl_setup();
 
 
+
+
+
+
+
     //Call one at a time to see examples
      display_meter();
     // display_image();

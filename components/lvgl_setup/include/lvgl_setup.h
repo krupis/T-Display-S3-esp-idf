@@ -7,6 +7,15 @@
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_panel_ops.h"
 #include "driver/gpio.h"
+#include "driver/i2c.h"
+#include "esp_lcd_touch_cst816s.h"
+
+
+//CST816 defines
+#define EXAMPLE_I2C_SCL                17
+#define EXAMPLE_I2C_SDA                18
+#define EXAMPLE_I2C_NUM                 0   // I2C number
+
 
 #define EXAMPLE_LCD_PIXEL_CLOCK_HZ (10 * 1000 * 1000)
 
