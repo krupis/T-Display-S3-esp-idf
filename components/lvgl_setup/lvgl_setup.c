@@ -21,6 +21,27 @@ LV_IMG_DECLARE(esp_logo)
 
 
 
+static void example_lvgl_touch_cb(lv_indev_drv_t * drv, lv_indev_data_t * data)
+{
+    uint16_t touchpad_x[1] = {0};
+    uint16_t touchpad_y[1] = {0};
+    uint8_t touchpad_cnt = 0;
+    /* Read touch controller data */
+    esp_lcd_touch_read_data(drv->user_data);
+
+    /* Get coordinates */
+    bool touchpad_pressed = esp_lcd_touch_get_coordinates(drv->user_data, touchpad_x, touchpad_y, NULL, &touchpad_cnt, 1);
+
+    if (touchpad_pressed && touchpad_cnt > 0) {
+        data->point.x = touchpad_x[0];
+        data->point.y = touchpad_y[0];
+        data->state = LV_INDEV_STATE_PRESSED;
+    } else {
+        data->state = LV_INDEV_STATE_RELEASED;
+    }
+}
+
+
 static void set_value(void *indic, int32_t v)
 {
     lv_meter_set_indicator_end_value(meter, indic, v);
@@ -74,12 +95,12 @@ void lvgl_setup()
     gpio_set_level(EXAMPLE_PIN_NUM_BK_LIGHT, EXAMPLE_LCD_BK_LIGHT_ON_LEVEL);
 
     //CST816 TOUCH TESTING FUNCTION
-    gpio_config_t touch_gpio_config =
-        {
-            .mode = GPIO_MODE_OUTPUT,
-            .pin_bit_mask = 1ULL << PIN_TOUCH_RES};
-    ESP_ERROR_CHECK(gpio_config(&touch_gpio_config));
-    gpio_set_level(PIN_TOUCH_RES, 1);
+    // gpio_config_t touch_gpio_config =
+    //     {
+    //         .mode = GPIO_MODE_OUTPUT,
+    //         .pin_bit_mask = 1ULL << PIN_TOUCH_RES};
+    // ESP_ERROR_CHECK(gpio_config(&touch_gpio_config));
+    // gpio_set_level(PIN_TOUCH_RES, 1);
     //END OF CST816 TOUCH TESTING FUNCTION
 
 
@@ -198,28 +219,16 @@ void lvgl_setup()
     ESP_LOGI(TAG,"esp_lcd_new_panel_io_i2c");
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)EXAMPLE_I2C_NUM, &tp_io_config, &tp_io_handle));
 
-    // esp_lcd_touch_config_t tp_cfg = {
-    //     .x_max = 320,
-    //     .y_max = 170,
-    //     .rst_gpio_num = 21,
-    //     .int_gpio_num = 16,
-    //     .levels = {
-    //         .reset = 1,
-    //         .interrupt = 0,
-    //     },
-    //     .flags = {
-    //         .swap_xy = 0,
-    //         .mirror_x = 0,
-    //         .mirror_y = 0,
-    //     },
-    // };
 
-
-    esp_lcd_touch_config_t tp_cfg = {
+        esp_lcd_touch_config_t tp_cfg = {
         .x_max = 320,
         .y_max = 170,
-        .rst_gpio_num = -1,
-        .int_gpio_num = -1,
+        .rst_gpio_num = 21,
+        .int_gpio_num = 16,
+        .levels = {
+            .reset = 0,
+            .interrupt = 0,
+        },
         .flags = {
             .swap_xy = 0,
             .mirror_x = 0,
@@ -259,6 +268,16 @@ void lvgl_setup()
     esp_timer_handle_t lvgl_tick_timer = NULL;
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
+
+    //xTaskCreatePinnedToCore(lvgl_timer_task, "lvgl Timer", 10000, NULL, 4, NULL, 1);
+
+    static lv_indev_drv_t indev_drv;    // Input device driver (Touch)
+    lv_indev_drv_init(&indev_drv);
+    indev_drv.type = LV_INDEV_TYPE_POINTER;
+    indev_drv.disp = disp;
+    indev_drv.read_cb = example_lvgl_touch_cb;
+    indev_drv.user_data = tp;
+    lv_indev_drv_register(&indev_drv);
 
     xTaskCreatePinnedToCore(lvgl_timer_task, "lvgl Timer", 10000, NULL, 4, NULL, 1);
 

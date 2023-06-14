@@ -36,7 +36,7 @@ static esp_err_t read_id(esp_lcd_touch_handle_t tp);
 
 esp_err_t esp_lcd_touch_new_i2c_cst816s(const esp_lcd_panel_io_handle_t io, const esp_lcd_touch_config_t *config, esp_lcd_touch_handle_t *tp)
 {
-    printf("CUSTON COMPONENT CST816S config \n");
+    //printf("CUSTON COMPONENT CST816S config \n");
     ESP_RETURN_ON_FALSE(io, ESP_ERR_INVALID_ARG, TAG, "Invalid io");
     ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, TAG, "Invalid config");
     ESP_RETURN_ON_FALSE(tp, ESP_ERR_INVALID_ARG, TAG, "Invalid touch handle");
@@ -74,6 +74,7 @@ esp_err_t esp_lcd_touch_new_i2c_cst816s(const esp_lcd_panel_io_handle_t io, cons
             .pin_bit_mask = BIT64(cst816s->config.rst_gpio_num)
         };
         ESP_GOTO_ON_ERROR(gpio_config(&rst_gpio_config), err, TAG, "GPIO reset config failed");
+
 
         /* Register interrupt callback */
         if (cst816s->config.interrupt_callback) {
@@ -161,14 +162,26 @@ static esp_err_t del(esp_lcd_touch_handle_t tp)
 static esp_err_t reset(esp_lcd_touch_handle_t tp)
 {
     if (tp->config.rst_gpio_num != GPIO_NUM_NC) {
-        ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, tp->config.levels.reset), TAG, "GPIO set level failed");
-        vTaskDelay(pdMS_TO_TICKS(10));
-        ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, !tp->config.levels.reset), TAG, "GPIO set level failed");
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-
-    return ESP_OK;
+    ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, tp->config.levels.reset), TAG, "GPIO set level failed");
+    vTaskDelay(pdMS_TO_TICKS(200));
+    ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, !tp->config.levels.reset), TAG, "GPIO set level failed");
+    vTaskDelay(pdMS_TO_TICKS(200));
 }
+
+return ESP_OK;
+}
+
+// static esp_err_t reset(esp_lcd_touch_handle_t tp)
+// {
+//     if (tp->config.rst_gpio_num != GPIO_NUM_NC) {
+//         ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, tp->config.levels.reset), TAG, "GPIO set level failed");
+//         vTaskDelay(pdMS_TO_TICKS(10));
+//         ESP_RETURN_ON_ERROR(gpio_set_level(tp->config.rst_gpio_num, !tp->config.levels.reset), TAG, "GPIO set level failed");
+//         vTaskDelay(pdMS_TO_TICKS(10));
+//     }
+
+//     return ESP_OK;
+// }
 
 static esp_err_t read_id(esp_lcd_touch_handle_t tp)
 {

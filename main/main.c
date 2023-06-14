@@ -63,7 +63,7 @@ void app_main(void)
 
 
     //Call one at a time to see examples
-     display_meter();
+    //display_meter();
     // display_image();
     // display_window();
 
