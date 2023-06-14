@@ -57,6 +57,10 @@ void display_meter();
 void display_window();
 void display_image();
 
+void bsp_display_unlock(void);
+bool bsp_display_lock(uint32_t timeout_ms);
+
+
 
 
 

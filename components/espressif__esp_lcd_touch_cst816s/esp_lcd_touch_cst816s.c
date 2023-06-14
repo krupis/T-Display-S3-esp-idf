@@ -65,6 +65,12 @@ esp_err_t esp_lcd_touch_new_i2c_cst816s(const esp_lcd_panel_io_handle_t io, cons
             .intr_type = GPIO_INTR_NEGEDGE
         };
         ESP_GOTO_ON_ERROR(gpio_config(&int_gpio_config), err, TAG, "GPIO intr config failed");
+
+        /* Register interrupt callback */
+        if (cst816s->config.interrupt_callback) {
+            esp_lcd_touch_register_interrupt_callback(cst816s, cst816s->config.interrupt_callback);
+        }
+
     }
     /* Prepare pin for touch controller reset */
     if (cst816s->config.rst_gpio_num != GPIO_NUM_NC) {
@@ -76,10 +82,7 @@ esp_err_t esp_lcd_touch_new_i2c_cst816s(const esp_lcd_panel_io_handle_t io, cons
         ESP_GOTO_ON_ERROR(gpio_config(&rst_gpio_config), err, TAG, "GPIO reset config failed");
 
 
-        /* Register interrupt callback */
-        if (cst816s->config.interrupt_callback) {
-            esp_lcd_touch_register_interrupt_callback(cst816s, cst816s->config.interrupt_callback);
-        }
+
     }
     /* Reset controller */
     ESP_GOTO_ON_ERROR(reset(cst816s), err, TAG, "Reset failed");

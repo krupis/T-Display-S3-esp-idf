@@ -55,11 +55,9 @@ void app_main(void)
 
 
     lvgl_setup();
-
-
-
-
-
+    bsp_display_lock(0);
+    display_meter();
+    bsp_display_unlock();
 
 
     //Call one at a time to see examples

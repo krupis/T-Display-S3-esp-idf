@@ -17,29 +17,54 @@ static lv_obj_t *esp_img_logo;
 LV_IMG_DECLARE(ue_logo)
 LV_IMG_DECLARE(esp_logo)
 
+#define BSP_NULL_CHECK(x, ret)           assert(x)
+
+
+
+static SemaphoreHandle_t lvgl_mux;                  // LVGL mutex
+static SemaphoreHandle_t touch_mux;                 // Touch mutex
 
 
 
 
-static void example_lvgl_touch_cb(lv_indev_drv_t * drv, lv_indev_data_t * data)
+static void bsp_touchpad_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
 {
     uint16_t touchpad_x[1] = {0};
     uint16_t touchpad_y[1] = {0};
     uint8_t touchpad_cnt = 0;
-    /* Read touch controller data */
-    esp_lcd_touch_read_data(drv->user_data);
 
+    /* Read data from touch controller into memory */
+    if (xSemaphoreTake(touch_mux, 0) == pdTRUE) {
+        esp_lcd_touch_read_data(drv->user_data);
+    }
     /* Get coordinates */
     bool touchpad_pressed = esp_lcd_touch_get_coordinates(drv->user_data, touchpad_x, touchpad_y, NULL, &touchpad_cnt, 1);
+
 
     if (touchpad_pressed && touchpad_cnt > 0) {
         data->point.x = touchpad_x[0];
         data->point.y = touchpad_y[0];
         data->state = LV_INDEV_STATE_PRESSED;
+        printf("data->point.x = %u \n",data->point.x);
+        printf("data->point.y = %u \n",data->point.y);
     } else {
         data->state = LV_INDEV_STATE_RELEASED;
     }
 }
+
+
+
+static void touch_callback(esp_lcd_touch_handle_t tp)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(touch_mux, &xHigherPriorityTaskWoken);
+
+    if (xHigherPriorityTaskWoken) {
+        portYIELD_FROM_ISR();
+    }
+}
+
+
 
 
 static void set_value(void *indic, int32_t v)
@@ -73,6 +98,10 @@ static void example_increase_lvgl_tick(void *arg)
 
 void lvgl_setup()
 {
+
+    static lv_disp_draw_buf_t disp_buf; // contains internal graphic buffer(s) called draw buffer(s)
+    static lv_disp_drv_t disp_drv;      // contains callback functions
+
     gpio_config_t pwr_gpio_config =
         {
             .mode = GPIO_MODE_OUTPUT,
@@ -94,19 +123,6 @@ void lvgl_setup()
     ESP_ERROR_CHECK(gpio_config(&bk_gpio_config));
     gpio_set_level(EXAMPLE_PIN_NUM_BK_LIGHT, EXAMPLE_LCD_BK_LIGHT_ON_LEVEL);
 
-    //CST816 TOUCH TESTING FUNCTION
-    // gpio_config_t touch_gpio_config =
-    //     {
-    //         .mode = GPIO_MODE_OUTPUT,
-    //         .pin_bit_mask = 1ULL << PIN_TOUCH_RES};
-    // ESP_ERROR_CHECK(gpio_config(&touch_gpio_config));
-    // gpio_set_level(PIN_TOUCH_RES, 1);
-    //END OF CST816 TOUCH TESTING FUNCTION
-
-
-
-    static lv_disp_draw_buf_t disp_buf; // contains internal graphic buffer(s) called draw buffer(s)
-    static lv_disp_drv_t disp_drv;      // contains callback functions
 
     ESP_LOGI(TAG, "Initialize Intel 8080 bus");
     esp_lcd_i80_bus_handle_t i80_bus = NULL;
@@ -161,12 +177,6 @@ void lvgl_setup()
 
     esp_lcd_panel_reset(panel_handle);
     esp_lcd_panel_init(panel_handle);
-
-    // ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));
-    // ESP_ERROR_CHECK(esp_lcd_panel_swap_xy(panel_handle, true));
-    // ESP_ERROR_CHECK(esp_lcd_panel_mirror(panel_handle, false, true));
-    // ESP_ERROR_CHECK(esp_lcd_panel_set_gap(panel_handle, 0, 35));
-
     esp_lcd_panel_invert_color(panel_handle, true);
     esp_lcd_panel_swap_xy(panel_handle, true);
     esp_lcd_panel_mirror(panel_handle, false, true);
@@ -234,17 +244,26 @@ void lvgl_setup()
             .mirror_x = 0,
             .mirror_y = 0,
         },
+        .interrupt_callback = touch_callback,
     };
+
+
 
     ESP_LOGI(TAG,"esp_lcd_touch_new_i2c_cst816s");
     esp_lcd_touch_new_i2c_cst816s(tp_io_handle, &tp_cfg, &tp);
-
-
 
     //END OF CST816 TOUCH TESTING FUNCTION
 
 
     lv_init();
+
+
+    lvgl_mux = xSemaphoreCreateMutex();
+    BSP_NULL_CHECK(lvgl_mux, NULL);
+
+    touch_mux = xSemaphoreCreateBinary();
+    BSP_NULL_CHECK(touch_mux, NULL);
+
 
     // it's recommended to choose the size of the draw buffer(s) to be at least 1/10 screen sized
     lv_color_t *buf1 = heap_caps_malloc(LVGL_LCD_BUF_SIZE * sizeof(lv_color_t), MALLOC_CAP_DMA);
@@ -269,31 +288,49 @@ void lvgl_setup()
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
-    //xTaskCreatePinnedToCore(lvgl_timer_task, "lvgl Timer", 10000, NULL, 4, NULL, 1);
 
     static lv_indev_drv_t indev_drv;    // Input device driver (Touch)
+    lv_indev_t *indev_touchpad;
     lv_indev_drv_init(&indev_drv);
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.disp = disp;
-    indev_drv.read_cb = example_lvgl_touch_cb;
+    indev_drv.read_cb = bsp_touchpad_read;
     indev_drv.user_data = tp;
-    lv_indev_drv_register(&indev_drv);
+    indev_touchpad = lv_indev_drv_register(&indev_drv);
+    BSP_NULL_CHECK(indev_touchpad, ESP_ERR_NO_MEM);
 
     xTaskCreatePinnedToCore(lvgl_timer_task, "lvgl Timer", 10000, NULL, 4, NULL, 1);
 
 }
 
 
+
 static void lvgl_timer_task(void *arg)
 {
-    while (1)
-    {
-        // raise the task priority of LVGL and/or reduce the handler period can improve the performance
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-        // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
-        lv_timer_handler();
+    ESP_LOGI(TAG, "Starting LVGL task");
+    while (1) {
+        bsp_display_lock(0);
+        uint32_t task_delay_ms = lv_timer_handler();
+        bsp_display_unlock();
+        if (task_delay_ms > 500) {
+            task_delay_ms = 500;
+        } else if (task_delay_ms < 5) {
+            task_delay_ms = 5;
+        }
+        vTaskDelay(pdMS_TO_TICKS(task_delay_ms));
     }
 }
+
+// static void lvgl_timer_task(void *arg)
+// {
+//     while (1)
+//     {
+//         // raise the task priority of LVGL and/or reduce the handler period can improve the performance
+//         vTaskDelay(10 / portTICK_PERIOD_MS);
+//         // The task running lv_timer_handler should have lower priority than that running `lv_tick_inc`
+//         lv_timer_handler();
+//     }
+// }
 
 void display_meter()
 {
@@ -371,8 +408,34 @@ void display_image()
 
 
 
+bool bsp_display_lock(uint32_t timeout_ms)
+{
+    BSP_NULL_CHECK(lvgl_mux, NULL);
+    const TickType_t timeout_ticks = (timeout_ms == 0) ? portMAX_DELAY : pdMS_TO_TICKS(timeout_ms);
+    return xSemaphoreTake(lvgl_mux, timeout_ticks) == pdTRUE;
+}
 
+void bsp_display_unlock(void)
+{
+    BSP_NULL_CHECK(lvgl_mux, NULL);
+    xSemaphoreGive(lvgl_mux);
+}
 
+// lv_disp_t *bsp_display_start(void)
+// {
+//     lv_init();
+//     lv_disp_t *disp = lvgl_port_display_init();
+//     BSP_NULL_CHECK(disp, NULL);
 
+//     BSP_ERROR_CHECK_RETURN_NULL(lvgl_port_tick_init());
+//     lvgl_mux = xSemaphoreCreateMutex();
+//     BSP_NULL_CHECK(lvgl_mux, NULL);
 
+//     touch_mux = xSemaphoreCreateBinary();
+//     BSP_NULL_CHECK(touch_mux, NULL);
+//     BSP_ERROR_CHECK_RETURN_NULL(lvgl_port_indev_init());
 
+//     xTaskCreate(lvgl_timer_task, "LVGL task", 4096, NULL, 5, NULL);
+
+//     return disp;
+// }
