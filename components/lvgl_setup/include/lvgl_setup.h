@@ -56,6 +56,10 @@ void lvgl_setup();
 void display_meter();
 void display_window();
 void display_image();
+void display_red_square();
+void display_dropdown();
+
+void get_img_color();
 
 void bsp_display_unlock(void);
 bool bsp_display_lock(uint32_t timeout_ms);
