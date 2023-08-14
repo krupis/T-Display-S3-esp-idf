@@ -51,6 +51,9 @@
 // Supported alignment: 16, 32, 64. A higher alignment can enables higher burst transfer size, thus a higher i80 bus throughput.
 #define EXAMPLE_PSRAM_DATA_ALIGNMENT 32
 
+//Change this to 0 if you do not wish to use Touch.
+#define USE_TOUCH_DISPLAY 1
+
 
 void lvgl_setup();
 void display_meter();

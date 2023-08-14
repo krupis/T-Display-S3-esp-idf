@@ -56,16 +56,15 @@ void app_main(void)
 
     lvgl_setup();
     bsp_display_lock(0);
-    //display_red_square();
-    //get_img_color();
-    display_dropdown();
-    bsp_display_unlock();
-
-
     //Call one at a time to see examples
     //display_meter();
     // display_image();
     // display_window();
+    //display_dropdown();
+    bsp_display_unlock();
+
+
+
 
 
 

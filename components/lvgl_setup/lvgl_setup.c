@@ -26,11 +26,13 @@ LV_IMG_DECLARE(red_square)
 
 #define BSP_NULL_CHECK(x, ret)           assert(x)
 
-
-
 static SemaphoreHandle_t lvgl_mux;                  // LVGL mutex
 static SemaphoreHandle_t touch_mux;                 // Touch mutex
-#define USE_TOUCH_DISPLAY 1
+
+
+
+
+
 
 
 static void bsp_touchpad_read(lv_indev_drv_t * drv, lv_indev_data_t * data)
@@ -420,10 +422,6 @@ void display_window()
 
 void display_image()
 {
-    // ue_img_logo = lv_img_create(lv_scr_act());
-    // lv_img_set_src(ue_img_logo, &ue_logo);
-    // lv_obj_center(ue_img_logo);
-
     esp_img_logo = lv_img_create(lv_scr_act());
     lv_img_set_src(esp_img_logo, &esp_logo);
     lv_obj_center(esp_img_logo);
@@ -445,25 +443,9 @@ void display_red_square(){
 
 
 void get_img_color(){
-
-    // lv_color_t c = lv_color_make(0, 255, 0);
-
-    // lv_img_buf_set_px_color(ui_redsquare,50,50,c);
-    // lv_img_buf_set_px_color(ui_redsquare,51,51,c);
-    // lv_img_buf_set_px_color(ui_redsquare,52,52,c);
-    // lv_img_buf_set_px_color(ui_redsquare,53,53,c);
-    // lv_img_buf_set_px_color(ui_redsquare,54,54,c);
-    // lv_img_buf_set_px_color(ui_redsquare,55,55,c);
-    // lv_img_buf_set_px_color(ui_redsquare,56,56,c);
-    // lv_img_buf_set_px_color(ui_redsquare,57,57,c);
-    // lv_img_buf_set_px_color(ui_redsquare,58,58,c);
-    // lv_img_buf_set_px_color(ui_redsquare,59,59,c);
-
     lv_color_t pixel_color = lv_img_buf_get_px_color(&red_square, 50, 50,lv_color_make(0, 0, 0));
-    uint8_t red = LV_COLOR_GET_R(pixel_color);
-    uint8_t green = LV_COLOR_GET_G(pixel_color);
-    uint8_t blue = LV_COLOR_GET_B(pixel_color);
-    printf("Pixel color: R:%d, G:%d, B:%d \n", red, green, blue);
+    uint32_t c32 = lv_color_to32(pixel_color);
+    printf("Pixel color: %lu \n", c32);
 }
 
 
@@ -484,21 +466,3 @@ void bsp_display_unlock(void)
     xSemaphoreGive(lvgl_mux);
 }
 
-// lv_disp_t *bsp_display_start(void)
-// {
-//     lv_init();
-//     lv_disp_t *disp = lvgl_port_display_init();
-//     BSP_NULL_CHECK(disp, NULL);
-
-//     BSP_ERROR_CHECK_RETURN_NULL(lvgl_port_tick_init());
-//     lvgl_mux = xSemaphoreCreateMutex();
-//     BSP_NULL_CHECK(lvgl_mux, NULL);
-
-//     touch_mux = xSemaphoreCreateBinary();
-//     BSP_NULL_CHECK(touch_mux, NULL);
-//     BSP_ERROR_CHECK_RETURN_NULL(lvgl_port_indev_init());
-
-//     xTaskCreate(lvgl_timer_task, "LVGL task", 4096, NULL, 5, NULL);
-
-//     return disp;
-// }
