@@ -60,7 +60,7 @@ void app_main(void)
     //display_meter();
     // display_image();
     // display_window();
-    //display_dropdown();
+    display_dropdown();
     bsp_display_unlock();
 
 
