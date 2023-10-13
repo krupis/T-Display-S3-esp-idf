@@ -1,10 +1,10 @@
 dependencies:
   espressif/esp_lcd_touch:
-    component_hash: 847284c65f8d5aaa9a801f5b3d3dac0ba0a5a2dc1bb68890989e84dd9c4a9d53
+    component_hash: 6cc76832cda51d73353a7e8d7aa07073d6cdb75b1ad66e2d98badd768f6c830a
     source:
       service_url: https://api.components.espressif.com/
       type: service
-    version: 1.0.4
+    version: 1.1.0
   espressif/esp_lcd_touch_cst816s:
     component_hash: 270bd7df3a2a5cffa3a626c4709fc03237d83fd9daa6fb70c833a2f1875f0f68
     source:
@@ -12,34 +12,34 @@ dependencies:
       type: service
     version: 1.0.3
   espressif/esp_lcd_touch_ft5x06:
-    component_hash: bb5cee419a017dfe2bd6c591fc9f8294ec0552fe28cddb48566e5b54336944f7
+    component_hash: 97759953d9436a365e9427078c5b04ecce4e6a50f50cf62c68cd6bfa229b812c
     source:
       service_url: https://api.components.espressif.com/
       type: service
-    version: 1.0.5~1
+    version: 1.0.6
   espressif/esp_lcd_touch_gt911:
-    component_hash: e3d8f37a430c4d053346b27fb1eec2b0670d0e07d9eb8a8cd084ac06f4cc5b80
+    component_hash: 20ac25d1439dbe177764dbed9cd868388fecb052380b5349f2e9e370013ca76a
     source:
       service_url: https://api.components.espressif.com/
       type: service
-    version: 1.0.7~1
+    version: 1.1.0
   espressif/esp_lcd_touch_tt21100:
-    component_hash: 27d0ec1226e2ce81ad6a170b27530dbcf959cd1fb9abe1ba207509a8a2f2ed22
+    component_hash: 3670f6f3d68c120d680d70ffdf2dc10f6c2a5bea8c0e87521fb92ac2af1f94c5
     source:
       service_url: https://api.components.espressif.com/
       type: service
-    version: 1.0.7~1
+    version: 1.1.0
   idf:
     component_hash: null
     source:
       type: idf
     version: 5.0.3
   lvgl/lvgl:
-    component_hash: a0525d74dd85092059565b91030daf539a76cce82386972ffebbde67016eb730
+    component_hash: 51022b16bce6ee90f54a8bd21cd6d497d886916899b577b1bebb9125b91e23fc
     source:
       service_url: https://api.components.espressif.com/
       type: service
-    version: 8.3.9
-manifest_hash: 5771b49f70939792a4b83ddb2e3aff6cd2b48084bb627b2b4dcf45578e3347bd
+    version: 8.3.10
+manifest_hash: 53c308d573c91809c41f48bfc8c6756e6955c3e34e645b816f8ebfa9ac95e541
 target: esp32s3
 version: 1.0.0

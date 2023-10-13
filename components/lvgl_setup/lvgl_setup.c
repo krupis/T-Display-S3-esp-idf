@@ -237,10 +237,10 @@ void lvgl_setup()
 
     ESP_LOGI(TAG, "esp_lcd_new_panel_io_i2c");
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)EXAMPLE_I2C_NUM, &tp_io_config, &tp_io_handle));
-
-    esp_lcd_touch_config_t tp_cfg = {
-        .x_max = 320,
-        .y_max = 170,
+    
+        esp_lcd_touch_config_t tp_cfg = {
+        .x_max = 170,
+        .y_max = 320,
         .rst_gpio_num = 21,
         .int_gpio_num = 16,
         .levels = {
@@ -250,10 +250,11 @@ void lvgl_setup()
         .flags = {
             .swap_xy = 1,
             .mirror_x = 0,
-            .mirror_y = 0,
+            .mirror_y = 1,
         },
         .interrupt_callback = touch_callback,
     };
+
 
     ESP_LOGI(TAG, "esp_lcd_touch_new_i2c_cst816s");
     esp_lcd_touch_new_i2c_cst816s(tp_io_handle, &tp_cfg, &tp);
@@ -407,7 +408,6 @@ void display_dropdown()
     lv_obj_set_y(ui_Dropdown2, -20);
     lv_obj_set_align(ui_Dropdown2, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Dropdown2, LV_OBJ_FLAG_SCROLL_ON_FOCUS); /// Flags
-    lv_disp_set_rotation(dispp, LV_DISP_ROT_180);
     lv_obj_add_event_cb(ui_Dropdown2, dropdown_event_handler, LV_EVENT_ALL, NULL);
 }
 
@@ -455,7 +455,6 @@ void display_slider()
     /*Create a label below the slider*/
     slider_label = lv_label_create(lv_scr_act());
     lv_label_set_text(slider_label, "0%");
-    // lv_disp_set_rotation(dispp, LV_DISP_ROT_180);
     lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
 }
 
