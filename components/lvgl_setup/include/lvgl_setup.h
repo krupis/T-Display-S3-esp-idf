@@ -59,6 +59,7 @@ void lvgl_setup();
 void display_meter();
 void display_window();
 void display_image();
+void display_slider();
 void display_red_square();
 void display_dropdown();
 

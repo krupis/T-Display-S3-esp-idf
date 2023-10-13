@@ -178,8 +178,15 @@ void lvgl_setup()
     esp_lcd_panel_reset(panel_handle);
     esp_lcd_panel_init(panel_handle);
     esp_lcd_panel_invert_color(panel_handle, true);
+
     esp_lcd_panel_swap_xy(panel_handle, true);
-    esp_lcd_panel_mirror(panel_handle, false, true);
+
+    // WITHOUT 180 DEGREES ROTATION
+    // esp_lcd_panel_mirror(panel_handle, true, false); //Y AXIS SHIFTED BUT X AXIS OK
+    // esp_lcd_panel_mirror(panel_handle, true, true); //Y AXIS SHIFTED AND X AXIS SHIFTED
+    // esp_lcd_panel_mirror(panel_handle, false, false); //Everything is ok but its upside down
+    esp_lcd_panel_mirror(panel_handle, false, true); // Not upside down anymore but now the X axis is inverted
+
     // the gap is LCD panel specific, even panels with the same driver IC, can have different gap value
     esp_lcd_panel_set_gap(panel_handle, 0, 35);
 
@@ -430,6 +437,35 @@ void display_red_square()
     lv_obj_set_align(ui_redsquare, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_redsquare, LV_OBJ_FLAG_ADV_HITTEST);  /// Flags
     lv_obj_clear_flag(ui_redsquare, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+}
+
+static void slider_event_cb(lv_event_t *e);
+static lv_obj_t *slider_label;
+
+void display_slider()
+{
+    lv_disp_t *dispp = lv_disp_get_default();
+    /*Create a slider in the center of the display*/
+    lv_obj_t *slider = lv_slider_create(lv_scr_act());
+    lv_obj_set_x(slider, 0);
+    lv_obj_set_y(slider, -40);
+    lv_obj_set_align(slider, LV_ALIGN_CENTER);
+    lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    /*Create a label below the slider*/
+    slider_label = lv_label_create(lv_scr_act());
+    lv_label_set_text(slider_label, "0%");
+    // lv_disp_set_rotation(dispp, LV_DISP_ROT_180);
+    lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+}
+
+static void slider_event_cb(lv_event_t *e)
+{
+    lv_obj_t *slider = lv_event_get_target(e);
+    char buf[8];
+    lv_snprintf(buf, sizeof(buf), "%d%%", (int)lv_slider_get_value(slider));
+    lv_label_set_text(slider_label, buf);
+    lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
 }
 
 void get_img_color()

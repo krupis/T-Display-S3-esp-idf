@@ -56,11 +56,14 @@ void app_main(void)
 
     lvgl_setup();
     bsp_display_lock(0);
+    display_slider();
     //Call one at a time to see examples
     //display_meter();
     // display_image();
     // display_window();
-    display_dropdown();
+    //display_dropdown();
+
+    
     bsp_display_unlock();
 
 
