@@ -181,11 +181,7 @@ void lvgl_setup()
 
     esp_lcd_panel_swap_xy(panel_handle, true);
 
-    // WITHOUT 180 DEGREES ROTATION
-    // esp_lcd_panel_mirror(panel_handle, true, false); //Y AXIS SHIFTED BUT X AXIS OK
-    // esp_lcd_panel_mirror(panel_handle, true, true); //Y AXIS SHIFTED AND X AXIS SHIFTED
-    // esp_lcd_panel_mirror(panel_handle, false, false); //Everything is ok but its upside down
-    esp_lcd_panel_mirror(panel_handle, false, true); // Not upside down anymore but now the X axis is inverted
+    esp_lcd_panel_mirror(panel_handle, false, true);
 
     // the gap is LCD panel specific, even panels with the same driver IC, can have different gap value
     esp_lcd_panel_set_gap(panel_handle, 0, 35);
@@ -237,8 +233,8 @@ void lvgl_setup()
 
     ESP_LOGI(TAG, "esp_lcd_new_panel_io_i2c");
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)EXAMPLE_I2C_NUM, &tp_io_config, &tp_io_handle));
-    
-        esp_lcd_touch_config_t tp_cfg = {
+
+    esp_lcd_touch_config_t tp_cfg = {
         .x_max = 170,
         .y_max = 320,
         .rst_gpio_num = 21,
@@ -254,7 +250,6 @@ void lvgl_setup()
         },
         .interrupt_callback = touch_callback,
     };
-
 
     ESP_LOGI(TAG, "esp_lcd_touch_new_i2c_cst816s");
     esp_lcd_touch_new_i2c_cst816s(tp_io_handle, &tp_cfg, &tp);
