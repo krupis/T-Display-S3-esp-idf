@@ -52,7 +52,7 @@
 #define EXAMPLE_PSRAM_DATA_ALIGNMENT 32
 
 //Change this to 0 if you do not wish to use Touch.
-#define USE_TOUCH_DISPLAY 1
+#define USE_TOUCH_DISPLAY 0
 
 
 void lvgl_setup();
